@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de Tiempos y Base de Datos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-chart-line"></i>
+                    Analizador de Tiempos y DB
+                </h1>
+                <p class="subtitle">Herramienta para procesar datos de tiempos y exportar bases de datos SQLite</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="tabs">
+                <button class="tab active" data-tab="timeAnalyzer">
+                    <i class="fas fa-clock"></i> Analizador
+                </button>
+                <button class="tab" data-tab="dbConverter">
+                    <i class="fas fa-database"></i> Conversor DB
+                </button>
+                
+                <div class="total-hours-summary" id="totalHoursSummary" style="display: none;">
+                    <div class="hours-summary-badge">
+                        <i class="fas fa-stopwatch"></i>
+                        <span class="summary-label">Total horas AFK:</span>
+                        <span class="summary-value" id="totalAfkHours">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content active" id="timeAnalyzer">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-file-excel"></i> Analizar Tiempos AFK</h2>
+                    </div>
+                    
+                    <div class="upload-section">
+                        <div class="file-upload" id="excelFileUpload">
+                            <div class="upload-icon">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <h3>Arrastra tu archivo Excel aquí</h3>
+                            <p class="upload-hint">o haz clic para seleccionar</p>
+                            <button class="upload-btn">
+                                <i class="fas fa-folder-open"></i> Seleccionar Archivo
+                            </button>
+                            <input type="file" id="excelFile" accept=".xlsx,.xls" hidden>
+                        </div>
+                        
+                        <div class="file-list" id="fileList">
+                            <div class="empty-message">No hay archivos seleccionados</div>
+                        </div>
+                        
+                        <div class="filter-controls">
+                            <div class="process-btn-group">
+                                <button id="processBtn" class="process-btn" disabled>
+                                    <i class="fas fa-cog"></i> Procesar Archivo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" id="resultsCard" style="display: none;">
+                    <div class="card-header">
+                        <h2><i class="fas fa-table"></i> Resultados</h2>
+                        <button id="exportResults" class="download-btn" disabled>
+                            <i class="fas fa-file-export"></i> Exportar
+                        </button>
+                    </div>
+                    
+                    <div id="status" class="status"></div>
+                    <div id="loading" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Procesando datos...
+                    </div>
+                    
+                    <!-- Añade este contenedor para alertas -->
+                    <div class="alerts-section">
+                        <button class="alerts-toggle" id="alertsToggle">
+                            <div class="alerts-header">
+                                <h3><i class="fas fa-chevron-down toggle-icon"></i> Alertas</h3>
+                                <span class="badge danger" id="alertsCount">0</span>
+                            </div>
+                        </button>
+                        <div id="alertsContainer" class="alerts-container"></div>
+                    </div>
+                    
+                    <div class="table-container" id="resultsTable"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="dbConverter">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-exchange-alt"></i> Convertir SQLite a Excel</h2>
+                    </div>
+                    
+                    <div class="upload-section">
+                        <div class="file-upload" id="dbFileUpload">
+                            <div class="upload-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <h3>Arrastra tu base de datos SQLite aquí</h3>
+                            <p class="upload-hint">o haz clic para seleccionar</p>
+                            <button class="upload-btn">
+                                <i class="fas fa-folder-open"></i> Seleccionar Archivo
+                            </button>
+                            <input type="file" id="dbFile" accept=".sqlite,.db,.sqlite3,.db3" hidden>
+                        </div>
+                        
+                        <div class="file-list" id="dbFileList">
+                            <div class="empty-message">No hay archivos seleccionados</div>
+                        </div>
+                        
+                        <div class="filter-controls">
+                            <div class="filter-group">
+                                <label for="tableSelect">
+                                    <i class="fas fa-table"></i> Seleccionar tabla
+                                </label>
+                                <select id="tableSelect" disabled>
+                                    <option value="">-- Primero cargue una base de datos --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="process-btn-group">
+                                <button id="exportBtn" class="process-btn" disabled>
+                                    <i class="fas fa-file-excel"></i> Exportar a Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>
+                <i class="far fa-copyright"></i> 
+                Herramienta de análisis - Versión 2.0
+            </p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="alerts.js"></script>
+    <script src="converter.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
